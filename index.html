@@ -1,0 +1,394 @@
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<!DOCTYPE html>
+<html>
+   <head>
+      <title>Buckhouse Idaho</title>
+      <link rel="shortcut icon" type="image/png" href="favicon.png">
+      <!-- Global site tag (gtag.js) - Google Analytics -->
+      <script async src="https://www.googletagmanager.com/gtag/js?id=UA-45198036-2"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'UA-45198036-2');
+      </script>
+      <!-- Angular -->
+      <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.min.js"></script>
+      <!-- Font awesome -->
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+      <!-- Bootstrap CSS -->
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+      <!-- Leaflet CSS -->
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
+       <!-- Make sure you put this AFTER Leaflet's CSS -->
+      <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+      <script src="allData.js"></script>
+      <style type="text/css">
+         /* Always set the map height explicitly to define the size of the div
+         * element that contains the map. */
+         #mapid { 
+            height: 50% 
+         }
+         .pane {
+            /* display: inline-block; */
+            overflow-y: scroll;
+            max-height: 500px;
+         }
+         tr {
+            cursor: pointer;
+         }
+         table {
+            text-align: left;
+            position: relative;
+         }
+         th {
+            background: #f5f5f5;
+            position: sticky;
+            top: 0;
+         }
+         .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 */
+            height: 0;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .fa-twitter, .fa-twitter-square {
+            color: #00aced
+         }
+         .fa-youtube, .fa-youtube-play, .fa-youtube-square {
+            color: #b44545
+         }
+         .fa-instagram {
+            color: #517fa4;
+         }
+      </style>
+   </head>
+   <body ng-app="myApp" ng-controller="myCtrl">
+      <div class="container-fluid">
+         <h3>Johnathan's Ski Resort challenge</h3>
+         <div id="mapid"></div>
+         <!-- THE SEARCH BOX  -->
+         <br>
+
+            <!-- Progress bar  -->
+            <div>
+               <p>Johnathan has visited {{visitedCount}} out of {{skiResortCount}} resorts so far! <i>last updated: {{lastUpdated}}</i></p>
+               <!-- <div class="progress">
+                  <div class="progress-bar" role="progressbar" aria-valuenow="70"
+                  aria-valuemin="0" aria-valuemax="100" style="width:70%">
+                     {{(visitedCount / allData.length)*100 | number:1 }}%
+                  </div>
+               </div>  -->
+            </div>
+
+            <!-- Search column -->
+            <div>
+               <div class="input-group">
+                  <span class="input-group-addon"><i class="fa fa-search"></i></span>
+                  <input type="text" class="form-control" name="msg" placeholder="Monarch Ski Area" ng-model="search">
+               </div>
+            </div>
+ 
+
+         <br>
+         <div class="pane">
+            <table class="table table-hover">
+               <tr>
+                  <th>
+                     <a ng-click="orderByField='resortName'; reverseSort = !reverseSort">
+                        <span>Resort Name</span> 
+                        <span ng-show="orderByField == 'resortName'">
+                           <span ng-show="!reverseSort"><i class="fa fa-caret-up"></i></span>
+                           <span ng-show="reverseSort"><i class="fa fa-caret-down"></i></span>
+                        </span>
+                     </a>
+                  </th>
+                  <th>
+                     <a ng-click="orderByField='region'; reverseSort = !reverseSort">
+                        <span>Region</span> 
+                        <span ng-show="orderByField == 'region'">
+                           <span ng-show="!reverseSort"><i class="fa fa-caret-up"></i></span>
+                           <span ng-show="reverseSort"><i class="fa fa-caret-down"></i></span>
+                        </span>
+                     </a>
+                  </th>
+                  <th>
+                     <a ng-click="orderByField='state'; reverseSort = !reverseSort">
+                        <span>State</span> 
+                        <span ng-show="orderByField == 'state'">
+                           <span ng-show="!reverseSort"><i class="fa fa-caret-up"></i></span>
+                           <span ng-show="reverseSort"><i class="fa fa-caret-down"></i></span>
+                        </span>
+                     </a>
+                  </th>
+                  <th>
+                     <a ng-click="orderByField='city'; reverseSort = !reverseSort">
+                        <span>City</span> 
+                        <span ng-show="orderByField == 'city'">
+                           <span ng-show="!reverseSort"><i class="fa fa-caret-up"></i></span>
+                           <span ng-show="reverseSort"><i class="fa fa-caret-down"></i></span>
+                        </span>
+                     </a>
+                  </th>
+                  <th>
+                     <a ng-click="orderByField='videos.length'; reverseSort = !reverseSort">
+                        <span>Videos</span> 
+                        <span ng-show="orderByField == 'videos.length'">
+                           <span ng-show="!reverseSort"><i class="fa fa-caret-up"></i></span>
+                           <span ng-show="reverseSort"><i class="fa fa-caret-down"></i></span>
+                        </span>
+                     </a>
+                  </th>
+                  <th>
+                     <a ng-click="orderByField='resortReviewScore'; reverseSort = !reverseSort">
+                        <span>Score</span> 
+                        <span ng-show="orderByField == 'resortReviewScore'">
+                           <span ng-show="!reverseSort"><i class="fa fa-caret-up"></i></span>
+                           <span ng-show="reverseSort"><i class="fa fa-caret-down"></i></span>
+                        </span>
+                     </a>
+                  </th>
+               </tr>
+               <tr ng-repeat="data in allData | orderBy : orderByField : reverseSort | filter : search" onclick="tableRowClick(this)">
+                  <td>
+                     <i ng-show="data.videos.length>0" class="fa fa-check-square"></i> 
+                     <i ng-show="data.videos.length===0" class="fa fa-square"></i>
+                     <span>{{data.resortName}}</span>
+                     <!-- <span ng-show="!data.officialSkiResort">(unofficial ski resort)</span> -->
+                  </td>
+                  <td>{{data.region}}</td>
+                  <td>{{data.state}}</td>
+                  <td>{{data.city}}</td>
+                  <!-- <a ng-href="http://www.gravatar.com/avatar/{{hash}}">link1</a> -->
+                  <td> 
+                     <span ng-show="data.videos.length===0">{{data.videos.length}}</span>
+                     <span ng-show="data.videos.length>0">
+                        <a target="_blank" ng-href="https://www.youtube.com/watch_videos?video_ids={{data.videos.join(',')}}">{{data.videos.length}}</a>
+                     </span>
+                  </td>
+                  <td>
+                     <span ng-show="!data.resortReviewScore">N/A</span>
+                     <span ng-show="data.resortReviewScore">
+                           <a target="_blank" ng-href="https://youtube.com/watch/{{data.resortReviewLink}}">{{data.resortReviewScore}}/100</a>
+                     </span>
+                  </td>
+               </tr>
+            </table>
+         </div>
+      </div>
+
+      <br>
+      <br>
+      <br>
+
+      <div class="navbar navbar-default navbar-fixed-bottom">
+               <p class="navbar-text pull-left">
+                     Follow Johnathan
+                     <a href="https://www.youtube.com/c/JohnathanBuckhouse" target="_blank"><i class="fa fa-youtube-play"></i></a>
+                     <a href="https://www.instagram.com/johnathanbuckhouse" target="_blank"><i class="fa fa-instagram"></i></a>
+                     <a href="https://twitter.com/johnbuckhouse" target="_blank"><i class="fa fa-twitter"></i></a>
+               </p>
+               <p class="navbar-text pull-right">
+                  Website suggestions? <a href="mailto:shellnut@gmail.com?subject=Buckhouse Ski Map">Email Kenny</a>
+               </p>
+         </div>
+                    
+   </body>
+   <script>
+
+      // Code goes here
+      var app = angular.module('myApp', []);
+      
+      // Governing app controller
+      app.controller('myCtrl', ['$scope', function($scope) {
+         // Assign the data to the view
+          $scope.allData = JSON.parse(JSON.stringify(allData));
+          $scope.visitedCount = allData.filter(val => val.videos.length > 0 && val.officialSkiResort).length;
+          $scope.skiResortCount = allData.filter(val => val.officialSkiResort).length; 
+          $scope.lastUpdated = lastUpdated;
+          $scope.orderByField = '';
+          $scope.reverseSort = true;
+      }]);
+
+      // Set the default view
+      var defaultCoordinates = [39.480243, -106.06667]; // breckenridge coords
+      var defaultZoom = 4;
+      var mymap = L.map('mapid').setView(defaultCoordinates, defaultZoom);
+
+      // Copyright information
+      L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+        maxZoom: 18,
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, ' +
+          'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+        id: 'mapbox/streets-v11',
+        tileSize: 512,
+        zoomOffset: -1
+      }).addTo(mymap);
+
+      // Green Icon (visited)
+      var greenIcon = new L.Icon({
+        iconUrl: 'jb_been_to.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
+
+      // black Icon (unofficial ski resort)
+      var blackIcon = new L.Icon({
+        iconUrl: 'jb_unofficial.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
+
+      // Red Icon (not yet visited)
+      var redIcon = new L.Icon({
+        iconUrl: 'jb.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
+
+      // idaho
+      var idahoIcon = new L.Icon({
+        iconUrl: 'warning.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [40, 40],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
+
+      for (var i = 0; i<allData.length; i++) {
+
+        // Assign the icon color (visited or not)   
+        var icon;
+        if (!allData[i].officialSkiResort) {
+           icon = blackIcon; // unofficial ski resort
+        }
+        else if (allData[i].state.toLowerCase() === 'idaho') {
+           icon = idahoIcon;
+        }
+        else if (allData[i].videos.length > 0) {
+           icon = greenIcon; // visited
+        }
+        else {
+           icon = redIcon; // not yet visited
+        }
+
+        // Generate the video link html
+        var videoLinks;
+        var videoWidth = 400;
+        var videoHeight = 225;
+        if (allData[i].videos.length === 0) {
+          videoLinks = `<p>Johnathan hasn't traveled here yet! Check back soon</p>`;
+        }
+        else if (allData[i].videos.length === 1) {
+          videoLinks = `<p>Here is the only video of Johnathan from this location <p><iframe width="${videoWidth}" height="${videoHeight}" src="https://www.youtube-nocookie.com/embed/${allData[i].videos[0]}?playlist=${allData[i].videos.slice(1).join(',')}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></p>`;
+        }
+        else if (allData[i].videos.length > 1) {
+           if (allData[i].videos.length > 200) {
+             videoHeight = 150;
+             videoLinks = `<p>Here are ${allData[i].videos.length} videos (in 2 playlists) of Johnathan from this location <p><iframe width="${videoWidth}" height="${videoHeight}" src="https://www.youtube-nocookie.com/embed/${allData[i].videos[0]}?playlist=${allData[i].videos.slice(1, 200).join(',')}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></p>` +
+             `<p><iframe width="${videoWidth}" height="${videoHeight}" src="https://www.youtube-nocookie.com/embed/${allData[i].videos[200]}?playlist=${allData[i].videos.slice(200).join(',')}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></p>`
+           }
+           else {
+             videoLinks = `<p>Here are ${allData[i].videos.length} videos (in a playlist) of Johnathan from this location <p><iframe width="${videoWidth}" height="${videoHeight}" src="https://www.youtube-nocookie.com/embed/${allData[i].videos[0]}?playlist=${allData[i].videos.slice(1).join(',')}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></p>`;              
+           }
+        }
+
+        // Disclaimer for unofficial ski resorts
+        var officialSkiResortWarning = '';        
+        if (!allData[i].officialSkiResort) {
+          officialSkiResortWarning = '<p><b>Note</b>: this is not an official ski resort</p>';
+        }
+
+        // Link to the website
+        var modalTitle = '';
+        if (allData[i].website) {
+            if (allData[i].id) {
+               if (allData[i].state.toLowerCase() === 'idaho') {
+                 modalTitle = `<h3 id="firstHeading" class="firstHeading">WARNING THIS RESORT IS IN IDAHO! <a href="${allData[i].website}" target="_blank" title="Resort Website">${allData[i].resortName}, ${allData[i].state}</a> <a href="https://skimap.org/SkiAreas/view/${allData[i].id}" target="_blank" title="Resort Map"><i class="fa fa-map-o" aria-hidden="true"></i></a></h3>`;
+               }
+               else {
+                 modalTitle = `<h3 id="firstHeading" class="firstHeading"><a href="${allData[i].website}" target="_blank" title="Resort Website">${allData[i].resortName}, ${allData[i].state}</a> <a href="https://skimap.org/SkiAreas/view/${allData[i].id}" target="_blank" title="Resort Map"><i class="fa fa-map-o" aria-hidden="true"></i></a></h3>`;
+               }
+            }
+            else {
+                if (allData[i].state.toLowerCase() === 'idaho') {
+                  modalTitle = `<h3 id="firstHeading" class="firstHeading">WARNING THIS RESORT IS IN IDAHO! <a href="${allData[i].website}" target="_blank" title="Resort Website">${allData[i].resortName}, ${allData[i].state}</a></h3>`;
+                }
+                else {
+                  modalTitle = `<h3 id="firstHeading" class="firstHeading"><a href="${allData[i].website}" target="_blank" title="Resort Website">${allData[i].resortName}, ${allData[i].state}</a></h3>`;
+                }
+            }
+        }
+        else {
+            modalTitle = `<h3 id="firstHeading" class="firstHeading">${allData[i].resortName}, ${allData[i].state}</h3>`;
+        }
+
+        // Link to the score
+        var resortReview = '';
+        if (allData[i].resortReviewScore) {
+          resortReview = `<p>Johnathan's Resort Review Score: <a target="_blank" href="https://www.youtube.com/watch/${allData[i].resortReviewLink}">${allData[i].resortReviewScore}/100</a></p>`;
+        }
+
+        // HTML popup content
+        var popupContent = '<div id="content">' +
+                   '<div id="siteNotice">' +
+                   '</div>' +
+                   modalTitle +
+                   '<div id="bodyContent">' +
+                   resortReview +
+                   officialSkiResortWarning +
+                   videoLinks +
+                   '</div>' +
+                   '</div>';
+
+        // Popup otions for the leaflet map library
+        var popupOptions = {
+          // maxHeight: 600,
+          minWidth: 400
+        };
+
+        // Marker options
+        L.marker([allData[i].position.lat, allData[i].position.lng], {icon: icon}).addTo(mymap)
+        .bindPopup(popupContent, popupOptions)
+        .bindTooltip(allData[i].resortName + (allData[i].officialSkiResort ? '' : ' (unofficial ski resort)'));
+      }
+
+      //Pans to corresponding resort
+      function tableRowClick(x) {
+         var clickedResortInfoArray = (x.innerText.trim()).split("	");
+         
+         for (i = 0; i < allData.length; ++i) {
+            var resort = allData[i];
+            if(resort.resortName == clickedResortInfoArray[0] && resort.region == clickedResortInfoArray[1] && resort.city == clickedResortInfoArray[3]) {
+               
+               var coords = L.latLng(resort.position.lat, resort.position.lng);
+
+               // mymap.panTo(coords);
+               mymap.setView(coords, 9);
+
+               //Wanted to open the narjer but it doesn't work
+               //mymap.fireEvent('click', {latlng: coords});
+            }
+         }
+      }
+
+
+ </script>
+</html>
